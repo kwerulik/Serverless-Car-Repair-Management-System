@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Zgłaszania Napraw</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
+        h2 { text-align: center; color: #333; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #ff9900; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #e68a00; }
+        #status { margin-top: 15px; text-align: center; font-size: 14px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🔧 Zgłoś Naprawę</h2>
+        <input type="text" id="auto" placeholder="Model Auta (np. Toyota Yaris)">
+        <input type="text" id="email" placeholder="Twój E-mail (opcjonalnie)">
+        <textarea id="opis" rows="4" placeholder="Opis usterki (np. Dziwne stuki w silniku)"></textarea>
+        <button onclick="wyslijZgloszenie()">Wyślij Zgłoszenie</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const API_URL = "https://ixlde2wskg.execute-api.eu-north-1.amazonaws.com/AddRepair";
+
+
+        async function wyslijZgloszenie() {
+            const btn = document.querySelector('button');
+            const statusDiv = document.getElementById('status');
+            
+            const auto = document.getElementById('auto').value;
+            const opis = document.getElementById('opis').value;
+            const email = document.getElementById('email').value;
+
+            if(!auto || !opis) {
+                statusDiv.innerHTML = "<span class='error'>Podaj model i opis!</span>";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Wysyłanie...";
+            statusDiv.innerHTML = "";
+
+            const dane = {
+                auto: auto,
+                opis: opis,
+                email: email
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dane)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `<span class='success'>✅ Sukces! ID: ${result.id}</span>`;
+                    // Wyczyszczenie formularza
+                    document.getElementById('auto').value = "";
+                    document.getElementById('opis').value = "";
+                } else {
+                    statusDiv.innerHTML = `<span class='error'>❌ Błąd: ${result.error || 'Nieznany błąd'}</span>`;
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                statusDiv.innerHTML = "<span class='error'>❌ Błąd połączenia z serwerem AWS. Sprawdź konsolę (F12).</span>";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Wyślij Zgłoszenie";
+            }
+        }
+    </script>
+
+</body>
+</html>

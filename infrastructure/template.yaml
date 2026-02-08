@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Infrastruktura dla Systemu Obsługi Zgłoszeń Napraw - Car Repair System'
+
+Resources:
+  # 1. Baza danych DynamoDB (Zgodnie z wymaganiami projektu)
+  RepairsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Repairs
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # 2. Temat SNS do powiadomień e-mail
+  RepairStatusTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: RepairStatusAlert
+
+  # 3. Rola IAM dla Lambdy - Minimalne uprawnienia (Least Privilege)
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaRepairPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt RepairsTable.Arn
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref RepairStatusTopic
+
+  # 4. Funkcja Lambda obsługująca logikę w Pythonie
+  AddRepairLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: AddRepairFunction
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        S3Bucket: <YOUR_BUCKET_NAME>
+        S3Key: lambda_function.zip
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref RepairStatusTopic
+
+  # 5. API Gateway (HTTP API) - Punkt wejścia dla frontendu
+  RepairApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: RepairServiceAPI
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowHeaders:
+          - Content-Type
+          - X-Amz-Date
+          - Authorization
+          - X-Api-Key
+        AllowMethods:
+          - POST
+          - OPTIONS
+        AllowOrigins:
+          - "*"
+
+  # 6. Integracja i ścieżka (Route) API
+  LambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref RepairApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddRepairLambda.Arn}/invocations"
+      PayloadFormatVersion: "2.0"
+
+  RepairRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref RepairApi
+      RouteKey: "POST /AddRepair"
+      Target: !Join [ "/", [ "integrations", !Ref LambdaIntegration ] ]
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref RepairApi
+      StageName: "$default"
+      AutoDeploy: true
+
+  # Uprawnienia pozwalające API Gateway wywoływać Lambdę
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AddRepairLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RepairApi}/*/*"
+# 7. Bucket S3 na stronę statyczną (Frontend)
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "warsztat-frontend-${AWS::AccountId}" # Unikalna nazwa z Twoim ID konta
+      PublicAccessBlockConfiguration: # Wyłączenie blokad publicznego dostępu
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  # 8. Polityka bucketu pozwalająca każdemu widzieć stronę
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${FrontendBucket}/*"
+
+Outputs:
+  # ... Twoje poprzednie API Endpoint ...
+  WebsiteURL:
+    Description: "Link do Twojej strony warsztatu"
+    Value: !GetAtt FrontendBucket.WebsiteURL
