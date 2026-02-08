@@ -34,7 +34,7 @@ SERVERLESS-CAR-REPAIR-MANAGEMENT-SYSTEM/
 │   └── lambda_function.py  # Backend logic (DB interactions & SNS publishing)
 │
 └── README.md            
-
+```
 ## 📋 Prerequisites
 
 Before deploying, ensure you have the following installed:
