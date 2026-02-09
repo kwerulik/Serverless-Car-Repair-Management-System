@@ -66,16 +66,16 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    statusDiv.innerHTML = `<span class='success'>✅ Sukces! ID: ${result.id}</span>`;
+                    statusDiv.innerHTML = `<span class='success'> Sukces! ID: ${result.id}</span>`;
                     document.getElementById('auto').value = "";
                     document.getElementById('opis').value = "";
                 } else {
-                    statusDiv.innerHTML = `<span class='error'>❌ Błąd: ${result.error || 'Nieznany błąd'}</span>`;
+                    statusDiv.innerHTML = `<span class='error'> Błąd: ${result.error || 'Nieznany błąd'}</span>`;
                 }
 
             } catch (error) {
                 console.error("Error:", error);
-                statusDiv.innerHTML = "<span class='error'>❌ Błąd połączenia z serwerem AWS. Sprawdź konsolę (F12).</span>";
+                statusDiv.innerHTML = "<span class='error'> Błąd połączenia z serwerem AWS. Sprawdź konsolę (F12).</span>";
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Wyślij Zgłoszenie";
