@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Infrastruktura dla Systemu Obsługi Zgłoszeń Napraw - Car Repair System'
 
 Resources:
-  # 1. Baza danych DynamoDB (Zgodnie z wymaganiami projektu)
+  # 1. Baza danych DynamoDB
   RepairsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -23,7 +23,7 @@ Resources:
     Properties:
       TopicName: RepairStatusAlert
 
-  # 3. Rola IAM dla Lambdy - Minimalne uprawnienia (Least Privilege)
+  # 3. Rola IAM dla Lambdy - Minimalne uprawnienia
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -118,12 +118,13 @@ Resources:
       FunctionName: !Ref AddRepairLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RepairApi}/*/*"
+
 # 7. Bucket S3 na stronę statyczną (Frontend)
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "warsztat-frontend-${AWS::AccountId}" # Unikalna nazwa z Twoim ID konta
-      PublicAccessBlockConfiguration: # Wyłączenie blokad publicznego dostępu
+      BucketName: !Sub "warsztat-frontend-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
         IgnorePublicAcls: false
@@ -145,7 +146,6 @@ Resources:
             Resource: !Sub "arn:aws:s3:::${FrontendBucket}/*"
 
 Outputs:
-  # ... Twoje poprzednie API Endpoint ...
   WebsiteURL:
     Description: "Link do Twojej strony warsztatu"
     Value: !GetAtt FrontendBucket.WebsiteURL
