@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Infrastruktura dla Systemu Obsługi Zgłoszeń Napraw - Car Repair System'
 
+Parameters:
+  LambdaCodeBucket: 
+    Type: String
+    Description: "Nazwa bucketu S3 (Artifacts), w którym znajduje się plik zip z kodem Lambdy"
+
 Resources:
   # 1. Baza danych DynamoDB
   RepairsTable:
@@ -63,7 +68,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.9
       Code:
-        S3Bucket: <YOUR_BUCKET_NAME>
+        S3Bucket: !Ref LambdaCodeBucket
         S3Key: lambda_function.zip
       Environment:
         Variables:
@@ -149,3 +154,6 @@ Outputs:
   WebsiteURL:
     Description: "Link do Twojej strony warsztatu"
     Value: !GetAtt FrontendBucket.WebsiteURL
+  FrontendBucketName: 
+    Description: "Nazwa bucketu utworzonego dla frontendu"
+    Value: !Ref FrontendBucket
