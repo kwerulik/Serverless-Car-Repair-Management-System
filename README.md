@@ -1,57 +1,129 @@
-# 🚗 Serverless Car Repair Management System
+# Serverless Car Repair Management System
 
-A cloud-native application designed to streamline car repair requests. This system leverages a fully serverless architecture on AWS, allowing customers to submit repair tickets that are automatically stored in a database and trigger immediate notifications to the workshop staff.
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 
-## 🏗 Architecture
+A fully **serverless**, cloud-native application designed to streamline car repair requests.
 
-The solution uses an Event-Driven Architecture:
+The system allows customers to submit repair tickets that are:
+- Automatically stored in a database
+- Instantly triggering email notifications to workshop staff
 
-1.  **Frontend:** Static HTML/JS website hosted on **Amazon S3**.
-2.  **API:** **Amazon API Gateway** (HTTP API) serves as the entry point.
-3.  **Compute:** **AWS Lambda** (Python) processes the requests.
-4.  **Database:** **Amazon DynamoDB** stores repair details (ID, Car Model, Description, Status).
-5.  **Notifications:** **Amazon SNS** sends alerts (e.g., email) when a new ticket is created.
+Built entirely using **AWS serverless services**, Infrastructure as Code, and automated CI/CD.
 
-## 🛠 Tech Stack
+---
 
-* **Infrastructure as Code:** AWS CloudFormation (YAML)
-* **Backend Runtime:** Python 3.9
-* **Frontend:** HTML5, CSS3, Vanilla JavaScript (Fetch API)
-* **AWS Services:** Lambda, API Gateway, DynamoDB, SNS, S3, IAM
+# Architecture
 
-## 📂 Project Structure
+```mermaid
+graph TD;
+    User[Customer] -->|HTTPS POST| API[API Gateway];
+    API -->|Trigger| Lambda[AWS Lambda];
+    Lambda -->|Store Data| DB[(DynamoDB)];
+    Lambda -->|Publish Event| SNS[Amazon SNS];
+    SNS -->|Email Alert| Admin[Workshop Staff];
+    S3[S3 Bucket] -->|Hosts Frontend| User;
+```
 
-```text
+---
+
+# Key Components
+
+### Frontend
+- Static HTML/CSS/JS
+- Hosted on Amazon S3
+- Uses Fetch API to communicate with backend
+
+### API
+- Amazon API Gateway (HTTP API)
+- Secure HTTPS endpoint
+
+### Compute
+- AWS Lambda (Python 3.9)
+- Handles:
+  - Input validation
+  - Ticket creation
+  - DynamoDB interaction
+  - SNS notification
+
+### Database
+- Amazon DynamoDB
+- Stores:
+  - Ticket ID
+  - Car Model
+  - Description
+  - Status
+
+### Notifications
+- Amazon SNS
+- Sends real-time email alerts to workshop staff
+
+---
+
+# Key Features
+
+- 100% Serverless
+- Infrastructure as Code (CloudFormation)
+- CI/CD pipeline
+- Automatic frontend deployment
+- Lambda update only if code changed (MD5 hash check)
+
+---
+
+# Tech Stack
+
+| Category        | Technology |
+|---------------|------------|
+| Cloud Provider | AWS |
+| IaC | AWS CloudFormation (YAML) |
+| Compute | AWS Lambda (Python 3.9) |
+| Database | Amazon DynamoDB |
+| API | Amazon API Gateway (HTTP) |
+| Frontend | HTML5, CSS3, JavaScript |
+| CI/CD | GitHub Actions |
+
+---
+
+# Project Structure
+
+```
 SERVERLESS-CAR-REPAIR-MANAGEMENT-SYSTEM/
 │
+├── .github/workflows/
+│   └── deploy.yml          # CI/CD Pipeline
+│
 ├── frontend/
-│   └── index.html          # User Interface & API integration logic
+│   └── index.html          # Frontend
 │
 ├── infrastructure/
-│   └── template.yaml       # CloudFormation template defining AWS resources
+│   └── template.yaml       # CloudFormation template
 │
 ├── src/
-│   └── lambda_function.py  # Backend logic (DB interactions & SNS publishing)
+│   └── lambda_function.py  # Backend logic
 │
-└── README.md            
+└── README.md
 ```
-## 📋 Prerequisites
 
-Before deploying, ensure you have the following installed:
-* **AWS CLI** (Configured with `aws configure`)
-* **Python 3.9+**
-* **Zip** utility (for packaging Lambda)
+---
 
-## 🚀 Deployment Guide
+# Deployment
 
-### 1. Package the Lambda Function
-AWS CloudFormation requires the Lambda code to be zipped and uploaded to S3 (or defined inline if short, but zipping is best practice).
+---
 
-```bash
-# Zip the source code
-cd src
-zip -r ../lambda_function.zip .
-cd ..
+## Option 1: Automatic Deployment (Recommended)
 
-# Upload to your S3 artifact bucket (replace with your bucket name)
-aws s3 cp lambda_function.zip s3://YOUR-ARTIFACT-BUCKET-NAME/
+The project is configured with **GitHub Actions CI/CD**.
+
+### How it works:
+1. Push changes to the `main` branch.
+2. The pipeline will:
+   - Package Lambda function
+   - Calculate MD5 hash
+   - Update Lambda only if code changed
+   - Update CloudFormation stack
+   - Sync frontend to S3
+
+Fully automated deployment
+
+---
