@@ -9,7 +9,7 @@ SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN')
 dynamodb = boto3.resource('dynamodb')
 sns = boto3.client('sns')
 table = dynamodb.Table('Repairs')
-
+#test CI
 
 def lambda_handler(event, context):
     print("Event:", event) # debug logging
