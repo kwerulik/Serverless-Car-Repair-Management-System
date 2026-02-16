@@ -1,51 +1,214 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Zgłaszania Napraw</title>
+    <title>System Zgłaszania Napraw | Warsztat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
-        h2 { text-align: center; color: #333; }
-        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #ff9900; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:hover { background-color: #e68a00; }
-        #status { margin-top: 15px; text-align: center; font-size: 14px; }
-        .success { color: green; }
-        .error { color: red; }
+        :root {
+            --primary-color: #4a90e2;
+            --primary-dark: #357abd;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        h2 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            transition: color 0.3s;
+        }
+
+        .input-group.textarea-group i {
+            top: 20px;
+            transform: none;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        input:focus+i,
+        textarea:focus+i {
+            color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(74, 144, 226, 0.25);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #status {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            min-height: 20px;
+            border-radius: 8px;
+            padding: 0;
+            transition: all 0.3s;
+        }
+
+        .success {
+            color: #276749;
+            background-color: #c6f6d5;
+            padding: 10px;
+            border: 1px solid #9ae6b4;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .error {
+            color: #9b2c2c;
+            background-color: #fed7d7;
+            padding: 10px;
+            border: 1px solid #feb2b2;
+            display: block;
+            border-radius: 8px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="container">
-        <h2>🔧 Zgłoś Naprawę</h2>
-        <input type="text" id="auto" placeholder="Model Auta (np. Toyota Yaris)">
-        <input type="text" id="email" placeholder="Twój E-mail (opcjonalnie)">
-        <textarea id="opis" rows="4" placeholder="Opis usterki (np. Dziwne stuki w silniku)"></textarea>
-        <button onclick="wyslijZgloszenie()">Wyślij Zgłoszenie</button>
+        <h2><i class="fas fa-tools"></i>Zgłoś Naprawę</h2>
+
+        <div class="input-group">
+            <i class="fas fa-car"></i>
+            <input type="text" id="auto" placeholder="Model Auta (np. Toyota Yaris)">
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="text" id="email" placeholder="Twój E-mail (opcjonalnie)">
+        </div>
+
+        <div class="input-group textarea-group">
+            <i class="fas fa-wrench"></i>
+            <textarea id="opis" rows="4" placeholder="Opis usterki (np. Dziwne stuki w silniku)"></textarea>
+        </div>
+
+        <button onclick="wyslijZgloszenie()">
+            <i class="fas fa-paper-plane"></i> Wyślij Zgłoszenie
+        </button>
+
         <div id="status"></div>
     </div>
 
     <script>
         const API_URL = "https://ixlde2wskg.execute-api.eu-north-1.amazonaws.com/AddRepair";
 
-
         async function wyslijZgloszenie() {
             const btn = document.querySelector('button');
+            const originalBtnContent = btn.innerHTML;
             const statusDiv = document.getElementById('status');
-            
+
             const auto = document.getElementById('auto').value;
             const opis = document.getElementById('opis').value;
             const email = document.getElementById('email').value;
 
-            if(!auto || !opis) {
-                statusDiv.innerHTML = "<span class='error'>Podaj model i opis!</span>";
+            if (!auto || !opis) {
+                statusDiv.innerHTML = "<span class='error'><i class='fas fa-exclamation-circle'></i> Podaj model i opis!</span>";
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "Wysyłanie...";
+            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wysyłanie...";
             statusDiv.innerHTML = "";
 
             const dane = {
@@ -66,19 +229,19 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    statusDiv.innerHTML = `<span class='success'> Sukces! ID: ${result.id}</span>`;
+                    statusDiv.innerHTML = `<span class='success'><i class='fas fa-check-circle'></i> Przyjęto! ID: ${result.id}</span>`;
                     document.getElementById('auto').value = "";
                     document.getElementById('opis').value = "";
                 } else {
-                    statusDiv.innerHTML = `<span class='error'> Błąd: ${result.error || 'Nieznany błąd'}</span>`;
+                    statusDiv.innerHTML = `<span class='error'><i class='fas fa-times-circle'></i> Błąd: ${result.error || 'Nieznany błąd'}</span>`;
                 }
 
             } catch (error) {
                 console.error("Error:", error);
-                statusDiv.innerHTML = "<span class='error'> Błąd połączenia z serwerem AWS. Sprawdź konsolę (F12).</span>";
+                statusDiv.innerHTML = "<span class='error'><i class='fas fa-wifi'></i> Błąd połączenia z AWS.</span>";
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Wyślij Zgłoszenie";
+                btn.innerHTML = originalBtnContent;
             }
         }
     </script>
