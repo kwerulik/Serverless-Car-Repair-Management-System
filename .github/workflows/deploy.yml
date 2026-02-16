@@ -36,6 +36,7 @@ jobs:
           template: infrastructure/template.yaml
           capabilities: CAPABILITY_IAM
           parameter-overrides: "LambdaCodeBucket=${{ secrets.ARTIFACTS_BUCKET_NAME }}"
+          no-fail-on-empty-changeset: "1"
 
       - name: Deploy Frontend to S3
         run: aws s3 sync ./frontend s3://${{ secrets.FRONTEND_BUCKET_NAME }} --delete
