@@ -23,11 +23,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       
-      - name: Zip lambda function
-        run: zip -j lambda_function.zip src/lambda_function.py
+      - name: Calculate Code Hash
+        id: calc_hash
+        run: |
+          HASH=$(md5sum src/lambda_function.py | awk '{ print $1 }')
+          echo "LAMBDA_FILENAME=lambda_function_${HASH}.zip" >> $GITHUB_ENV
+          echo "Wygenerowana nazwa pliku: lambda_function_${HASH}.zip"
       
+      - name: Zip lambda function
+        run: zip -j ${{ env.LAMBDA_FILENAME }} src/lambda_function.py
+
       - name: Upload lambda artifact to S3
-        run: aws s3 cp lambda_function.zip s3://${{ secrets.ARTIFACTS_BUCKET_NAME }}/lambda_function.zip
+        run: aws s3 cp ${{ env.LAMBDA_FILENAME }} s3://${{ secrets.ARTIFACTS_BUCKET_NAME }}/${{ env.LAMBDA_FILENAME }}
 
       - name: Deploy CloudFormation Stack
         uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -35,7 +42,7 @@ jobs:
           name: SystemNapraw
           template: infrastructure/template.yaml
           capabilities: CAPABILITY_IAM
-          parameter-overrides: "LambdaCodeBucket=${{ secrets.ARTIFACTS_BUCKET_NAME }}"
+          parameter-overrides: "LambdaCodeBucket=${{ secrets.ARTIFACTS_BUCKET_NAME }},LambdaCodeKey=${{ env.LAMBDA_FILENAME }}"
           no-fail-on-empty-changeset: "1"
 
       - name: Deploy Frontend to S3
