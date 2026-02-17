@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         body_json = json.loads(body_str)
         request_data = RepairRequest(**body_json)
 
-        repair_id = str(uuid.uuid4)
+        repair_id = str(uuid.uuid4())
         item = {
             'Id': repair_id,
             'auto': request_data.auto,
