@@ -40,12 +40,14 @@ graph TD;
 - Secure HTTPS endpoint
 
 ### Compute
-- AWS Lambda (Python 3.9)
+- AWS Lambda (Python 3.12)
+- Lambda Layer with dependencies (Pydantic, AWS Lambda Powertools)
 - Handles:
-  - Input validation
+  - Input validation with Pydantic
   - Ticket creation
   - DynamoDB interaction
   - SNS notification
+  - Structured logging
 
 ### Database
 - Amazon DynamoDB
@@ -64,10 +66,12 @@ graph TD;
 # Key Features
 
 - 100% Serverless
-- Infrastructure as Code (CloudFormation)
+- Infrastructure as Code (AWS CDK)
 - CI/CD pipeline
 - Automatic frontend deployment
-- Lambda update only if code changed (MD5 hash check)
+- Lambda layers for dependencies (Pydantic, AWS Lambda Powertools)
+- Input validation with Pydantic
+- Structured logging with AWS Lambda Powertools
 
 ---
 
@@ -76,12 +80,13 @@ graph TD;
 | Category        | Technology |
 |---------------|------------|
 | Cloud Provider | AWS |
-| IaC | AWS CloudFormation (YAML) |
-| Compute | AWS Lambda (Python 3.9) |
+| IaC | AWS CDK (Python) |
+| Compute | AWS Lambda (Python 3.12) |
 | Database | Amazon DynamoDB |
-| API | Amazon API Gateway (HTTP) |
+| API | Amazon API Gateway (HTTP API) |
 | Frontend | HTML5, CSS3, JavaScript |
 | CI/CD | GitHub Actions |
+| Libraries | AWS Lambda Powertools, Pydantic |
 
 ---
 
@@ -91,16 +96,32 @@ graph TD;
 SERVERLESS-CAR-REPAIR-MANAGEMENT-SYSTEM/
 │
 ├── .github/workflows/
-│   └── deploy.yml          # CI/CD Pipeline
+│   └── deploy.yml          # CI/CD Pipeline (CloudFormation - legacy)
 │
-├── frontend/
-│   └── index.html          # Frontend
+├── cdk-infra/              # AWS CDK Infrastructure
+│   ├── app.py              # CDK App entry point
+│   ├── cdk.json            # CDK configuration
+│   ├── requirements.txt    # CDK dependencies
+│   └── cdk_infra/
+│       └── cdk_infra_stack.py  # Main CDK stack definition
 │
-├── infrastructure/
-│   └── template.yaml       # CloudFormation template
+├── cdk-frontend/           # Frontend for CDK deployment
+│   └── index.html
+│
+├── frontend/               # Frontend (legacy)
+│   └── index.html
+│
+├── infrastructure/         # CloudFormation templates (legacy)
+│   └── template.yaml
+│
+├── lambda_layer/           # Lambda Layer with dependencies
+│   └── python/
+│       └── [dependencies]
 │
 ├── src/
-│   └── lambda_function.py  # Backend logic
+│   ├── lambda_cdk.py      # Lambda handler for CDK
+│   ├── lambda_function.py # Lambda handler (legacy)
+│   └── requirements.txt    # Lambda dependencies
 │
 └── README.md
 ```

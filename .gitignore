@@ -11,3 +11,11 @@
 # IDE
 .vscode/
 .idea/
+
+
+lambda_layer/python/
+
+# Pliki tymczasowe i logi
+*.log
+.DS_Store
+.env
