@@ -3,6 +3,10 @@ import boto3
 import uuid
 from datetime import datetime
 import os
+import logging
+
+logger = logging.getLogger()
+logging.setLevel(logging.info)
 
 # Service init
 SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN')
@@ -11,18 +15,19 @@ sns = boto3.client('sns')
 table = dynamodb.Table('Repairs')
 
 def lambda_handler(event, context):
-    print("Event:", event) # debug logging
+    logger.info(f"Otrzymano event: {json.dumps(event)}")
 
     try:
         http_method = event.get('requestContext', {}).get('http', {}).get('method')
         if http_method == 'OPTIONS':
             return build_response(200, '')
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"Błąd podczas sprawdzania metody HTTP: {str(e)}")
 
     try:
         if 'body' not in event:
-             return build_response(400, {'error': 'Brak danych w body'})
+            logger.error("Brak danych w body") 
+            return build_response(400, {'error': 'Brak danych w body'})
             
         if isinstance(event['body'], str):
             body = json.loads(event['body'])
@@ -30,7 +35,8 @@ def lambda_handler(event, context):
             body = event['body']
         
         if 'auto' not in body or 'opis' not in body:
-            return build_response(400, {'error': 'Brak pola auto lub opis!'})
+            logger.error("Brak pola auto lub opis")
+            return build_response(400, {'error': 'Brak pola auto lub opis'})
 
         repair_id = str(uuid.uuid4())
         # saving to DB
@@ -43,6 +49,7 @@ def lambda_handler(event, context):
             'data_zgloszenia': str(datetime.now())
         }
         table.put_item(Item=item)
+        logger.info(f"Zapisano do DynamoDB z Id: {repair_id}")
 
         # SNS notif
         sns.publish(
@@ -54,7 +61,7 @@ def lambda_handler(event, context):
         return build_response(200, {'message': 'Zgłoszenie przyjęte', 'id': repair_id})
 
     except Exception as e:
-        print(f"ERROR: {str(e)}")
+        logger.error(f"Lambda error {str(e)}", exc_info=True)
         return build_response(500, {'error': str(e)})
 
 def build_response(status_code, body):
