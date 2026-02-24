@@ -6,7 +6,7 @@ import os
 import logging
 
 logger = logging.getLogger()
-logging.setLevel(logging.info)
+logging.setLevel(logging.INFO)
 
 # Service init
 SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN')
