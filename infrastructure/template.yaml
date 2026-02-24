@@ -4,7 +4,7 @@ Description: 'Infrastruktura dla Systemu Obsługi Zgłoszeń Napraw - Car Repair
 Parameters:
   LambdaCodeBucket: 
     Type: String
-    Description: "Nazwa bucketu S3 (Artifacts), w którym znajduje się plik zip z kodem Lambdy"
+    Description: "Nazwa bucketu S3, w którym znajduje się plik zip z kodem Lambdy"
 
   LambdaCodeKey:
     Type: String
