@@ -33,7 +33,7 @@ graph TD;
 
 ---
 
-# CloudFormation + GitHub Actions (Production)
+# CloudFormation + GitHub Actions
 
 This is the **current production deployment** that is actively running.
 
